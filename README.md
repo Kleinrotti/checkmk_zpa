@@ -1,4 +1,4 @@
-# CheckMK Special Agent for Zscaler Private Access
+# CheckMK Special Agent for Zscaler Private Access App Connector Monitoring
 
 ## Requirements
 
@@ -7,7 +7,7 @@
 ## How to use
 
 - Install the mkp package in Checkmk. [HowTo](https://docs.checkmk.com/latest/en/mkps.html)
-- Create a rule "Zscaler via WebAPI"
+- Create a rule "Zscaler Private Access via WebAPI"
 - Do a service discovery
 
 ## What is monitored
