@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+
+# (c) 2025 Kleinrotti
+
+# This is free software;  you can redistribute it and/or modify it
+# under the  terms of the  GNU General Public License  as published by
+# the Free Software Foundation in version 2.  check_mk is  distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;  with-
+# out even the implied warranty of  MERCHANTABILITY  or  FITNESS FOR A
+# PARTICULAR PURPOSE. See the  GNU General Public License for more de-
+# ails.  You should have  received  a copy of the  GNU  General Public
+# License along with GNU Make; see the file  COPYING.  If  not,  write
+# to the Free Software Foundation, Inc., 51 Franklin St,  Fifth Floor,
+# Boston, MA 02110-1301 USA.
+
+import json
+import requests
+import argparse
+import sys
+
+
+def request(apiUrlSuffix: str):
+    """Perform a GET request to the ZPA API
+    """
+    req = requests.get(f"{API_URL}{apiUrlSuffix}",
+                       headers=HEADER)
+    if DEBUG:
+        print(f"------Debug output-------\n{req.text}")
+    if req.status_code != 200:
+        raise Exception(req.text)
+    return json.loads(req.text)
+
+
+def login():
+    """
+    Login at ZPA API
+
+    Returns
+    -------
+    ```dict[str, str]
+        The authorization header
+    """
+    payload = {
+        "client_id": CLIENTID,
+        "client_secret": CLIENTSECRET
+    }
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    response = requests.post(
+        f"{API_URL}/signin", data=payload, headers=headers)
+    if response.status_code != 200:
+        raise Exception(response.text)
+    auth_header = {
+        "Authorization": f"Bearer {json.loads(response.text).get("access_token")}"}
+    return auth_header
+
+
+def logout():
+    requests.post(
+        f"{API_URL}/signout", data={}, headers=HEADER)
+
+
+def get_connectors():
+    """
+    Get all Zscaler Connector statuses
+    """
+    response = request(
+        f'/mgmtconfig/v1/admin/customers/{CUSTOMER}/connector?pagesize=500')
+    print("<<<zpa_connector:sep(124)>>>")
+    for connector in response.get("list", []):
+        print(
+            f"{connector['name']}|{connector['enabled']}|{connector['controlChannelStatus']}|{connector['upgradeStatus']}|{connector['currentVersion']}")
+
+
+def main() -> None:
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument(
+        '-i', '--client_id', help="Client id", required=True
+    )
+    arg_parser.add_argument(
+        '-s', '--client_secret', help="Client secret", required=True
+    )
+    arg_parser.add_argument(
+        '-c', '--customer_id', help="Customer id", required=True
+    )
+    arg_parser.add_argument(
+        '-d', '--debug', help="Enable debugging which outputs the received json responses", action='store_true'
+    )
+    args = arg_parser.parse_args()
+
+    global CLIENTID, CLIENTSECRET, API_URL, DEBUG, HEADER, CUSTOMER
+    CLIENTID = args.client_id
+    CLIENTSECRET = args.client_secret
+    DEBUG = args.debug
+    CUSTOMER = args.customer_id
+    API_URL = "https://config.private.zscaler.com"
+
+    HEADER = login()
+    get_connectors()
+    logout()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

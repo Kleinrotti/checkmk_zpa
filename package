@@ -1,0 +1,16 @@
+{
+    'author': u'Kleinrotti',
+    'description': u'A plugin to get connector information from Zscaler Private Access API to monitor App Connectors.',
+    'download_url': 'https://github.com/Kleinrotti/checkmk_zpa',
+    'files': {'cmk_plugins': ['zpa/agent_based/zpa_connector.py',
+                              'zpa/checkman/zpa_connector',
+                              'zpa/libexec/agent_zpa',
+                              'zpa/rulesets/zpa_agent.py',
+                              'zpa/server_side_calls/check_zpa.py'
+                              ]},
+    'name': 'zpa',
+    'title': u'Zscaler Private Access Special Agent',
+    'version': '1.0.0',
+    'version.min_required': '2.3.0p1',
+    'version.packaged': '2.3.0p16'
+}
